@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
                         pgbScanning.setVisibility(pgbScanning.VISIBLE);
                     }
                     break;
-
+                //s
             }
         }
     };
@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
     private BleService.ICallback mCallback = new BleService.ICallback() {
         @Override
         public void remoteCall(Set<BleService.BTInfo> device) {
-            Toast.makeText(getApplicationContext(), "Found device count : " + device.size(), Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getApplicationContext(), "Found device count : " + device.size(), Toast.LENGTH_SHORT).show();
             LinearLayout scView = (LinearLayout)findViewById(R.id.scrollLinear);
             scView.removeAllViews();
             for (BleService.BTInfo itr : device) {
@@ -176,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
                     txt.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
+                            mService.stopScan();
                             createFragment();
                             // TODO : Fragment & Transaction (https://medium.com/bynder-tech/how-to-use-material-transitions-in-fragment-transactions-5a62b9d0b26b)
                             //Toast.makeText(getApplicationContext(), "TODO : Fragment", Toast.LENGTH_SHORT).show();
@@ -189,6 +190,10 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private void createFragment() {
+        pgbScanning.setVisibility(pgbScanning.INVISIBLE);
+        LinearLayout scView = (LinearLayout)findViewById(R.id.scrollLinear);
+        scView.removeAllViews();
+
         android.support.v4.app.FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fm.beginTransaction();
         Fragment mainFragment = new MainFragment();

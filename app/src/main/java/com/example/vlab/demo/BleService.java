@@ -187,55 +187,57 @@ public class BleService extends Service {
 //        }
 //    };
 
-    private ScanCallback mLEScanCallback = new ScanCallback() {
-
-        public void onScanResult(int callbackType, ScanResult result) {
-            //Log.i("callbackType", String.valueOf(callbackType));
-            //Log.i("result", result.toString());
-
-            // LE장치가 2개 이상일때는 ???
-            BluetoothDevice device = result.getDevice();
-
-            BTInfo info = new BTInfo(
-                    device.getAddress(),
-                    device.getName(),
-                    device
-
-            );
-
-            boolean flag = true;
-            for (Object itr : deviceSet) {
-                if (((BTInfo)itr).hashCode() == info.hashCode()) {
-                    flag = false;
-                }
-            }
-
-            if (flag == true) {
-                if (info.name == null) {
-                    info.name = "No named";
-                }
-                deviceSet.add(info);
-                mCallback.remoteCall(deviceSet);
-            }
-            //connectToDevice(btDevice);
-        }
-
-        @Override
-        public void onBatchScanResults(List<ScanResult> results) {
-            for (ScanResult sr : results) {
-                Log.i("ScanResult - Results", sr.toString());
-            }
-        }
-
-        @Override
-        public void onScanFailed(int errorCode) {
-            Log.e("Scan Failed", "Error Code: " + errorCode);
-        }
-    };
-
+    private ScanCallback mLEScanCallback;
 
     public void startScan() {
         Toast.makeText(getApplicationContext(), "Start scanning", Toast.LENGTH_SHORT).show();
+        deviceSet.clear();
+        mLEscanner = mBTAdapter.getBluetoothLeScanner();
+        mLEScanCallback = new ScanCallback() {
+
+            public void onScanResult(int callbackType, ScanResult result) {
+                //Log.i("callbackType", String.valueOf(callbackType));
+                //Log.i("result", result.toString());
+
+                // LE장치가 2개 이상일때는 ???
+                BluetoothDevice device = result.getDevice();
+
+                BTInfo info = new BTInfo(
+                        device.getAddress(),
+                        device.getName(),
+                        device
+
+                );
+
+                boolean flag = true;
+                for (Object itr : deviceSet) {
+                    if (((BTInfo)itr).hashCode() == info.hashCode()) {
+                        flag = false;
+                    }
+                }
+
+                if (flag == true) {
+                    if (info.name == null) {
+                        info.name = "No named";
+                    }
+                    deviceSet.add(info);
+                    mCallback.remoteCall(deviceSet);
+                }
+                //connectToDevice(btDevice);
+            }
+
+            @Override
+            public void onBatchScanResults(List<ScanResult> results) {
+                for (ScanResult sr : results) {
+                    Log.i("ScanResult - Results", sr.toString());
+                }
+            }
+
+            @Override
+            public void onScanFailed(int errorCode) {
+                Log.e("Scan Failed", "Error Code: " + errorCode);
+            }
+        };
         mLEscanner.startScan(mLEScanCallback);
 
 //        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
@@ -245,6 +247,8 @@ public class BleService extends Service {
     public void stopScan() {
         android.util.Log.i("서비스 테스트", "End Scanning");
         mLEscanner.stopScan(mLEScanCallback);
+
+        mLEScanCallback = null;
     }
 
 
@@ -315,9 +319,24 @@ public class BleService extends Service {
         Log.i("BLE testing", "Connection required");
         mGatt = device.connectGatt(this, false, gattCallback);
         mCurrentDevice = device;
-
-
     }
+
+    public void disconnect(String mac) {
+
+        BluetoothDevice device = null;
+        for (Object itr : this.deviceSet) {
+
+            if (((BTInfo)itr).getMAC() == mac) {
+                device = ((BTInfo) itr).device;
+            }
+        }
+
+//        mGatt = device.connectGatt(this, false, gattCallback);
+        mGatt.disconnect();
+        mCurrentDevice = null;
+    }
+
+
 
     class Data {
         public String type;
@@ -352,15 +371,13 @@ public class BleService extends Service {
                 int input2 = (data[5] << 24) + ((data[6] & 0xFF) << 16) + ((data[7] & 0xFF) << 8) + (data[8] & 0xFF);
                 int input3 = (data[9] << 24) + ((data[10] & 0xFF) << 16) + ((data[11] & 0xFF) << 8) + (data[12] & 0xFF);
 
-                mFragmentCallback.remoteCall(new Data("TYPE1", input1, input2, input3));
+                mFragmentCallback.remoteCall(new Data("TYPE2", input1, input2, input3));
 //            intent.putExtra(EXTRA_DATA1, String.valueOf(input1));
 //            intent.putExtra(EXTRA_DATA2, String.valueOf(input2));
 //            intent.putExtra(EXTRA_DATA3, String.valueOf(input3));
 
             }
         }
-
-
 
 
     }

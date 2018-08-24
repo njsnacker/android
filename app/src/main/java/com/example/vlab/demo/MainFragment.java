@@ -53,6 +53,7 @@ public class MainFragment extends Fragment {
 
     @Override
     public void onStop() {
+        mService.disconnect(macAddress);
         super.onStop();
     }
 }
